@@ -53,25 +53,17 @@ export default {
 </script>
 <style scoped>
 .dashboard{
-  color:#000;
+  width:100%;
+  height:100vh;
 }
 .dash-cont{
   z-index:2;
+  width:100%;
+  height:100%;
   padding:20px 0px;
-  position: fixed;
-  display:flex;
+  display:grid;
   place-items:center;
-  border-right:1px solid #e5e5e5;
-  border-top:none;
-  border-bottom:none;
-  /* margin:0px 2px; */
   height: 100vh;
-  /* background:#eaebeb; */
-  /* background:#e5e5e5; */
-  background:var(--white);
-  /* background:var(--secondary); */
-  overflow: overlay;
-  /* overflow:auto; */
 }
 .user_det{
   display:grid;
@@ -96,27 +88,22 @@ export default {
 
 }
 .dash-links{
-  padding-top:10px;
-  margin-bottom:30px;
-  margin-top:20px;
-  /* border-top:1px solid var(--flat-grey); */
+  margin:10px auto;
+  width:90%;
 }
 .dash-links>li{
   margin:15px 0px;
 }
 .dash-links a{
-  padding:10px 20px;
+  padding:5px 10px;
   display:flex;
   border-radius:5px;
   color:#8a8b8a;
-  /* padding: 15px; */
   font-size: 1.1em;
   place-items:center;
-  /* background:green; */
 }
 .dash-links a:hover{
-  background:#eaebeb;
-  /* color:var(--secondary); */
+  background:var(--selected-hover);
   cursor: pointer;
 }
 .dash-links a>span{
@@ -124,6 +111,8 @@ export default {
 }
 .dash-links a>i{
   font-size:1.1em;
+  display:inline-block;
+  margin-right:6px;
 }
 .route-cont{
 
