@@ -5,17 +5,17 @@
         <div>
           <!-- v-model:current="current" -->
           <a-steps :current="current">
-            <a-step title="Action">
+            <a-step class="step" title="Action">
               <template #icon>
                 <code-outlined />
               </template>
             </a-step>
-            <a-step title="Targets">
+            <a-step class="step" title="Targets">
               <template #icon>
                 <fullscreen-exit-outlined />
               </template>
             </a-step>
-            <a-step  title="Output">
+            <a-step class="step"  title="Output">
               <template #icon>
                 <profile-outlined />
               </template>
@@ -42,8 +42,8 @@
                 <a-tag style="margin:4px 0px;margin-right:10px;" color="blue" v-for="v in keepAlive.targetlist" :key="v.hostname">{{v.hostname}}</a-tag>
               </div>
               <div style="width:100%;display:grid;place-items:center;place-contents:center;height:50px;margin-top:30px;">
-                  <a-button  type="dashed" size="large" @click="automate">
-                    <span style="margin-right:10px;">Automate</span>
+                  <a-button class="ui_btn" size="large" @click="automate">
+                    <span style="margin-right:10px;">Run Automation</span>
                     <i class="fa-solid fa-robot"></i>
                   </a-button>
               </div>
@@ -55,11 +55,6 @@
             </div>
           </div>
         </div>
-        <!--  -->
-        <!-- <div v-if="(current+1)==steps.length" style="margin:30px 0px;">
-          <p>{{keepAlive}}</p>
-          <p>{{payload}}</p>
-        </div> -->
       </div>
     </div>
 </template>
@@ -134,10 +129,9 @@ export default {
       // console.log(this.payload," update")
     },
     automate(){
-      let payload=this.payload
-      payload.nodes=payload.nodes.map(e=>JSON.stringify(e))
-      payload.params=payload.params.map(e=>JSON.stringify(e))
-      this.$router.push({name:'auto',params:payload})
+      this.$store.dispatch('setAutomatePayload',this.payload)
+      // console.log(this.$store.state.application.automatePayload)
+      this.$router.push({name:'auto'})
     }
   },
   mounted(){
@@ -151,5 +145,12 @@ export default {
 <style scoped>
 .steps-action{
   margin-top:20px;
+}
+.steps-action button{
+  background:var(--button-background);
+  color: var(--secondary) !important;
+}
+.step{
+  color: var(--secondary) !important;
 }
 </style>

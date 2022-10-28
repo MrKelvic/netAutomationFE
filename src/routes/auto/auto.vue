@@ -136,7 +136,7 @@ export default {
               if(styled.includes(ei)){
                 return {style:`color:${e[ei]?'green':'red'};`,value:e[ei]?'Up':'Down'}
               }
-              return {style:`color:#000;`,value:e[ei]||''}
+              return {style:`color:#fff;`,value:e[ei]||''}
               })
         }))
         ]
@@ -180,16 +180,16 @@ export default {
       return Array.isArray(l)
     },
     setupPayload(){
-      this.nodes=this.$route?.params.nodes.map(e=>Object.assign({res:null,done:false,incom:false},JSON.parse(e)))
-      this.payloads.action=this.$route?.params.action
-      this.payloads.params=this.$route?.params.params.map(e=>{
-        let t=Object.assign({},JSON.parse(e))
+      this.nodes=this.$store.state.application.automatePayload.nodes.map(e=>Object.assign({res:null,done:false,incom:false},e))
+      this.payloads.action=this.$store.state.application.automatePayload.action
+      this.payloads.params=this.$store.state.application.automatePayload.params.map(e=>{
+        let t=Object.assign({},e)
         return genFns.parseParams[t.fnKey](t.fin)
       })
       if(Array.isArray(this.payloads.params[0])){
         this.payloads.params=this.payloads.params[0]
       }
-      this.payloads.engineFn=this.$route?.params.engineFn
+      this.payloads.engineFn=this.$store.state.application.automatePayload.engineFn
       // console.log(this.payloads)
       this.run()
     },
@@ -225,10 +225,10 @@ export default {
     },
   },
   mounted(){
-    console.clear()
-    console.log(this.$route.params)
-    this.payload=this.$route?.params
-    if(!this.$route?.params?.engineFn){
+    // console.clear()
+    console.log(this.$store.state.application.automatePayload)
+    // this.payload=this.$route?.params
+    if(!this.$store.state.application){
       this.$router.push({name:'commands'})
     }else{
       this.setupPayload()

@@ -43,14 +43,17 @@
           <div class="content-table">
              <a-table v-if="interfaceList.length" :columns="tableCols" :data-source="interfaceList" :scroll="{x:1300}" :pagination="{ pageSize:20,size:'small',showSizeChanger:false }">
               <template #state="{ text }">
-                <a-tag :color="interFaceColor(text,true)" >
+                <a-tag :color="interFaceColor(text,true)" style="color:var(--color);">
                   {{ text?'Up':'Admin Down' }}
                 </a-tag>
               </template>
               <template #connected="{ text }">
-                <a-tag :color="interFaceColor(true,text)" >
+                <a-tag :color="interFaceColor(true,text)" style="color:var(--color);" >
                   {{ text?'Up':'Down' }}
                 </a-tag>
+              </template>
+              <template #routed="{ text }">
+                <span>{{text?'routed port':'switchport'}}</span>
               </template>
               <template #edit="{ record }">
               <span>
@@ -81,15 +84,23 @@
               <a-form-item :colon="false" label="Administrative state">
                 <a-switch v-model:checked="isInEdit.int.state" />
               </a-form-item>
+              <a-form-item :colon="false" label="Routed Interface">
+                  <a-switch :disabled="!allowL2" @change="layerChange" v-model:checked="isInEdit.int.routed" />
+                  <span style="display:inline-block;margin:0px 20px;">{{isInEdit.int.routed?'routed port':'switch port'}}</span>
+                  <!-- <a-radio-group @change="layerChange" v-model:value="isInEdit.int.layer">
+                    <a-radio :disabled="!allowL2" :value="false">Switch port</a-radio>
+                    <a-radio :disabled="isInEdit.int.mode=='trunk'" :value="true">Routed port</a-radio>
+                  </a-radio-group> -->
+                </a-form-item>
               <div v-if="isInEdit.int.state">
-                <a-form-item v-if="allowL2&&isInEdit.int.layer=='L2'" :colon="false" label="Interface mode">
+                <a-form-item v-if="allowL2&&!isInEdit.int.routed" :colon="false" label="Interface mode">
                   <a-radio-group @change="controlIntType" v-model:value="isInEdit.int.mode">
                     <a-radio value="access">Access</a-radio>
                     <a-radio value="trunk">Trunk</a-radio>
                   </a-radio-group>
                 </a-form-item>
                 <div v-if="allowL2">
-                  <div v-if="isInEdit.int.mode=='access'&&isInEdit.int.layer=='L2'">
+                  <div v-if="isInEdit.int.mode=='access'&&!isInEdit.int.routed">
                     <a-form-item :colon="false" label="Data VLAN">
                       <a-input v-model:value="isInEdit.int.data" />
                     </a-form-item>
@@ -97,7 +108,7 @@
                       <a-input v-model:value="isInEdit.int.voice" />
                     </a-form-item>
                   </div>
-                  <div v-if="isInEdit.int.mode=='trunk'&&isInEdit.int.layer=='L2'">
+                  <div v-if="isInEdit.int.mode=='trunk'&&!isInEdit.int.routed">
                     <a-form-item :colon="false" label="Allowed VLANs">
                       <a-input v-model:value="isInEdit.int.allowedVlans" />
                     </a-form-item>
@@ -106,13 +117,7 @@
                     </a-form-item>
                   </div>
                 </div>
-                <a-form-item :colon="false" label="Interface type">
-                  <a-radio-group @change="layerChange" v-model:value="isInEdit.int.layer">
-                    <a-radio :disabled="!allowL2" value="L2">Switch port</a-radio>
-                    <a-radio :disabled="isInEdit.int.mode=='trunk'" value="L3">Routed port</a-radio>
-                  </a-radio-group>
-                </a-form-item>
-                <div v-if="isInEdit.int.layer=='L3'&&isInEdit.int.mode!='trunk'">
+                <div v-if="isInEdit.int.routed&&isInEdit.int.mode!='trunk'">
                   <a-form-item :colon="false" label="IP address">
                     <a-input v-model:value="isInEdit.int.ip" />
                   </a-form-item>
@@ -137,6 +142,8 @@
 <script>
 // imports goes here
 /* Work on sub interfaces */
+// import { diff, addedDiff, deletedDiff, updatedDiff, detailedDiff } from 'deep-object-diff';
+import genFns from '@/api/generalFns';
 export default {
   name: 'interfaceview',
   props:['content','deviceType'],
@@ -144,11 +151,10 @@ export default {
     },
   computed:{
     allowL2(){
-      console.log(this.deviceType)
+      // if interface is not a vlan nor a loopback and device is a switch all interface to be layer 2
       return !['Vlan','Loopback'].includes(this.isInEdit.int.module)&&['switch'].includes(this.deviceType)
     },
     isSubInterface(){
-          // console.log("hii")
           return true
     },
     rendIn(){
@@ -156,10 +162,9 @@ export default {
     },
     interFaceColor(){
       return (adminState,connected)=>{
-          if(adminState&&connected) return '#10c95e'//'#0eaf52';
-          if(!adminState) return '#a70808';
-          return '#d9d3d3'
-
+          if(adminState&&connected) return '#00a947'//'#0eaf52';
+          if(!adminState) return '#7e0303';
+          return '#4e4b4b'
       }
     }
   },
@@ -172,47 +177,82 @@ export default {
         removed:[]
       },
       interfaceList:[],
-      tableCols:[]
+      tableCols:[],
+      compareCache:[],
+      changes:[]
     }
   },
   methods:{
+    cleanUpChanges(changes){
+      return changes
+    },
+    computeChanges(){
+      // console.clear()
+      const index=this.changes.findIndex(e=>e.id==this.isInEdit.int.fullName);
+      const change=genFns.checkDiff(this.compareCache[this.isInEdit.int.index],this.isInEdit.int)
+      // console.log("change :: ",change)
+      if(index==-1){
+        this.changes.push({
+            id:this.isInEdit.int.fullName,
+            type:'interfaces',
+            changes:change
+          })
+      }else{
+        this.changes[index].changes=change
+      }
+      console.log(this.changes)
+      this.$emit("changeEvent",{target:'interfaces',value:this.cleanUpChanges(this.changes)})
+    },  
     saveEdit(){
+      this.computeChanges()
       this.interfaceList[this.isInEdit.int.index]=Object.assign({},JSON.parse(JSON.stringify(this.isInEdit.int)))
       this.isInEdit.int=null
       this.isInEdit.show=false
       this.isInEdit.removed=[]
+      // console.log("addedDiff :: ",addedDiff(this.isInEdit.int,this.isInEdit.temp))
+      // console.log("deletedDiff :: ",deletedDiff(this.isInEdit.int,this.isInEdit.temp))
+      // console.log("updatedDiff :: ",diff(this.isInEdit.int,this.isInEdit.temp))
+
     },
     editThis(record){
-      console.log(record)
+      // console.log(record)
       this.isInEdit.int=record
       this.isInEdit.show=true
       this.isInEdit.removed=[]
+      //store state of what is to be changed 
       this.isInEdit.temp=Object.assign({},JSON.parse(JSON.stringify(this.isInEdit.int)))
     },
     editClose(){
+      // reset back to initial ignoring all changes
       this.interfaceList[this.isInEdit.int.index]=this.isInEdit.temp
       this.isInEdit.show=false;
       this.isInEdit.int=null
+      this.isInEdit.temp=null
     },
     layerChange(e){
       const l3=[{key:"ip",def:''},{key:"mask",def:''},{key:"ip_helper",def:''}]
       const l2=[{key:"mode",def:'access'},{key:"allowedVlans",def:'all'},{key:"voice",def:null},{key:"data",def:'1'},{key:"nativeVlan",def:'1'}]
-      const isChanged=this.isInEdit.temp.layer!=e.target.value
-      if(e.target.value=='L2'){
+      const isChanged=this.isInEdit.temp.routed!=this.isInEdit.int.routed//e.target.value
+      if(!this.isInEdit.int.routed){
+        //if changed to layer2 remove all L3 properties
         for(let remove of l3){
           if(isChanged){
+            //check if value has been stored in cached if not store in cache array
             const f=this.isInEdit.removed.find(e=>e.key==remove.key)
             if(!f) this.isInEdit.removed.push({key:remove.key,value:this.isInEdit.int[remove.key]})
           }else{
+            // if value has not changed from what it was before then remove from cached
             this.isInEdit.removed=this.isInEdit.removed.filter(e=>e.key==remove.key)
           }
+          // remove changed key from the actual value
           delete this.isInEdit.int[remove.key]
         }
         for(let add of l2){
+          // add L2 key value pairs to the new value
           this.isInEdit.int[add.key]=add.def
         }
       }
-      else if(e.target.value=='L3'){
+      else{
         for(let remove of l2){
           if(isChanged){
             const f=this.isInEdit.removed.find(e=>e.key==remove.key)
@@ -226,19 +266,17 @@ export default {
           this.isInEdit.int[add.key]=add.def
         }
       }
-      // console.clear()
-      console.log(this.isInEdit.removed)
+      // console.log(this.isInEdit.removed)
     },
     controlIntType(e){
-      // console.log(e.target.value)
-      this.isInEdit.int.layer=e.target.value=='trunk'?'L2':this.isInEdit.int.layer
+      this.isInEdit.int.routed=e.target.value=='trunk'?false:this.isInEdit.int.routed
     },
     genColumns(){
       if(!this.interfaceList[0]) return []
       let filters=["index","name","ip_helper","module","shortName","description","id","allowedVlans","voice","nativeVlan"]
       let temp=Object.keys(this.interfaceList[0]).filter(e=>!filters.includes(e))
       let tempL3=Object.keys(this.interfaceList[this.interfaceList.length-1]).filter(e=>!filters.includes(e)&&!temp.includes(e))
-      let smallWidth=["connected","state","layer","data","outgoing_acl","inbound_acl","mode"]
+      let smallWidth=["connected","state","routed","data","outgoing_acl","inbound_acl","mode"]
       this.tableCols=[...temp,...tempL3].map(e=>({
         title:e,
         key:e,
@@ -255,20 +293,24 @@ export default {
       this.tableCols[0].fixed="left"
       this.tableCols[0].width=200
       this.tableCols[this.tableCols.length-1].fixed="right"
-      this.tableCols[this.tableCols.length-1].width=50
+      this.tableCols[this.tableCols.length-1].width=40
     },
     genLinearInterface(){
         let interList=[]
         let index=0
+        // console.log("Content::: ",this.content)
         for(let layer in this.content){
           for(let l2module in this.content[layer]){
             for(let intFace of this.content[layer][l2module].members){
               interList.push({index:index,...intFace})
+              this.compareCache.push({index:index,...intFace})
               index+=1
             }
           }
         }
+        // console.clear()
         this.interfaceList=interList
+        // console.log("compareCache:: ",this.compareCache)
         this.genColumns()
     }
   },
@@ -285,6 +327,8 @@ export default {
   margin:40px 0px;
 }
 .deviceModule{
+  background:var(--color);
+  color:var(--background);
   border:1px solid var(--g-color);
   width:fit-content;
   display:flex;
@@ -340,7 +384,8 @@ export default {
   display:flex;
   place-content:center;
   place-items:center;
-  color:var(--color-grey);
+  color:var(--color);
+  /* color:var(--color-grey); */
 }
 .key-code{
   width:13px;
