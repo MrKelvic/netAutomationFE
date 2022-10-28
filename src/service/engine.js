@@ -14,5 +14,10 @@ export default{
         let {url,type,header}=urls.report
         let req=await api(type,url,data,header,{})
         return req
+    },
+    async digestChanges(data){
+        let {url,type,header}=urls.digestChanges
+        let req=await api(type,url,data,header,{})
+        return req
     }
 }
