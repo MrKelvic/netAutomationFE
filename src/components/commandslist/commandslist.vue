@@ -14,7 +14,7 @@
           </a-radio-group>
         </div>
         <div class="parramsList" v-if="selected">
-          <p style="font-size:14px;"><span>{{selected.dis.title}}</span> <i :class="`fa-solid `+selected.dis.icon"></i></p>
+          <p style="font-size:14px;color: var(--secondary);"><span>{{selected.dis.title}}</span> <i :class="`fa-solid `+selected.dis.icon"></i></p>
           <div>
              <a-form-item v-for="(param,i) in selected.params" :key="param.label" :label="param.label">
                 <!-- <p>{{selected}}</p> -->
@@ -31,7 +31,7 @@
                </div>
               </a-form-item>
           </div>
-          <a-button size="small" v-if="showSave" style="margin-top:12px" @click="proccessAndUpdate">Save</a-button>
+          <a-button class="ui_btn" size="small" v-if="showSave" style="margin-top:5px;color:var(--action);" @click="proccessAndUpdate">Apply</a-button>
         </div>
       </div>
     </div>
@@ -258,9 +258,16 @@ export default {
 }
 </script>
 <style scoped>
+/* .ui_btn{
+  background:var(--button-background);
+  color: var(--secondary) !important;
+  border:none;
+} */
 .opt-btn{
   margin-left:20px;
   margin-bottom:20px;
+  /* background:var(--background); */
+  /* color: var(--color-grey); */
 }
 .opt-btn-in{
   display:grid;

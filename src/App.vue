@@ -40,7 +40,8 @@ export default {
 </script>
 
 <style>
-
+@import '~ant-design-vue/dist/antd.dark.css';
+@import '../src/assets/override.css';
 :root{
   --primary:#000;
   /* --secondary:#fff; */
@@ -49,18 +50,22 @@ export default {
   --theme:#1b4a43;
   --theme-bright:#40a092;
   --bold-font:-apple-system,BlinkMacSystemFont,Avenir,"Helvetica Neue","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  /* --color:#000; */
-  --color:#3c4043;
+  --color:#fff;
+  /* --color:#3c4043; */
   --error:#a70b0b;
-  --floor:#f1f1f1;
-  --white:#fff;
+  --floor:#0c1116;
+  --background:#0c1116;
+  --grey-selected:#1a1e25;
+  --selected-hover:rgba(177,186,196,0.12);
+  --button-background:#21262d;
   /* #f9f9fb #fafafa #f9f9fb */
   --flat-grey:#8e8e8e45;
   --color-grey:#3b3c3b;
   --action:rgb(14,175,82);
+  --active-green:#389e0d;
   /* #878a87  #3b3c3b*/
   --grey:#dadce0;
-  --palette-width:150px;
+  --palette-width:160px;
   /* --palette-width:270px; */
   /* G */
   --g-color:#5f6368;
@@ -77,7 +82,7 @@ export default {
   padding:0px;
   font-family:var(--bold-font);
   scroll-behavior:smooth;
-  transition:all 0.1s linear;
+  /* transition:all 0.1s linear; */
 }
 /* .router-link-active{
   background:var(--theme-bright);
@@ -85,15 +90,15 @@ export default {
 } */
 .router-link-exact-active,.router-link-active{
   /* background:#dde3e2; */
-  background:var(--secondary);
-  color:#000 !important;
+  background:var(--grey-selected);
+  color:var(--secondary) !important;
 }
 body,#app{
-  background:var(--secondary);
+  background:var(--background);
+  color:var(--color);
   min-height:100vh;
   min-width:100%;
   font-size:12px;
-  color:var(--color);
 }
 a{
   text-decoration:none;
@@ -129,6 +134,11 @@ button:hover{
   align-content:center;
   justify-items:center;
   align-items:center;
+}
+.ui_btn{
+  background:var(--button-background) !important;
+  color: var(--secondary);
+  border:none;
 }
 @media only screen and (max-width:1250px){
 

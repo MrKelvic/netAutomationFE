@@ -1,0 +1,15 @@
+.ant-steps-item-title,.ant-form-item-label > label{
+  color: var(--secondary) !important;
+}
+.ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled){
+    /* color: #1890ff !important; */
+    color: var(--action) !important;
+    background:var(--secondary) !important;
+    /* border-color:var(--action) !important; */
+}
+.ant-table-thead > tr > th,.ant-table{
+    background:transparent !important;
+}
+.ant-btn-link[disabled]{
+    color:var(--g-color) !important;
+}

@@ -174,6 +174,33 @@ let fns={
         rawString:(e)=>e,
         rawNumber:(e)=>parseInt(e),
         arrayOfStrings:(e)=>e.map(el=>String(el).trim())
+    },
+    checkDiff(orignal,changed){
+        console.log("original ",orignal)
+        console.log("changed ",changed)
+
+        let value={
+            added:{},
+            removed:{},
+            changed:{}
+        }
+        for(let key in orignal){
+            if(changed[key]==undefined){
+                value.removed[key]={value:orignal[key]}
+                //removed
+            }else if(orignal[key]!=changed[key]){
+                // changed
+                // value.changed.push({key:key,value:changed[key],old:orignal[key]})
+                value.changed[key]={value:changed[key],old:orignal[key]}
+            }
+        }
+        for(let key in changed){
+            if(orignal[key]==undefined){
+                // added
+                value.added[key]={value:changed[key]}
+            }
+        }
+        return value;
     }
 }
 
