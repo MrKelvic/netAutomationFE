@@ -41,17 +41,23 @@ export default {
 <style scoped>
 .__app__{
   width:100%;
+  max-width: 1280px;
+  margin-right: auto;
+  margin-left: auto;
   height:100vh;
   display:grid;
-  grid-template-columns:minmax(var(--palette-width),10%) minmax(auto,90%);
+  grid-template-columns:minmax(var(--palette-width), 15%) minmax(auto,100%);
   /* grid-template-columns: repeat(2, minmax(min(10rem, 100%), 1fr)); */
 }
-/* .palette{
-  } */
+.palette{
+  background:var(--background);
+}
 .__view__{
-  background:var(--secondary);
-  /* background:red; */
-  padding: 10px 10px;
+  /* background:var(--background); */
+  /* background:grey; */
+  /* border:1px solid white; */
+  padding:0px 10px;
+  padding-top:40px;
 }
 
 /* media */

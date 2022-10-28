@@ -4,6 +4,7 @@
       <div>
         <div class="selectionList">
           <div class="pool-cont">
+            <h2>Devices</h2>
             <div class="filters">
               <div>
                 <a-input-search :allowClear="true" size="small" v-model:value="filt.all.query" @input="supperFilter('all')" placeholder="Enter host name" style="width:200px;"/>
@@ -37,20 +38,21 @@
                     </template>
               </a-table>
             </div>
-            <div style="margin-top:10px;">
-              <a-button @click="addToNodes(true)" :disabled="filt.all.tempKeys.length<1" size="small" type="link">
-                  Add Selected
-                  <template #icon><PlusOutlined /></template>
-                </a-button>
-                <a-button @click="addToNodes(true,true)" :disabled="filt.all.filtered.length<1" size="small" type="link">
-                  Add All
-                  <template #icon><PlusOutlined /></template>
-                </a-button>
+            <div class="btn_grp" style="margin-top:10px;">
+              <a-button class="ui_btn" @click="addToNodes(true)" :disabled="filt.all.tempKeys.length<1" size="small" type="link">
+                Add Selected
+                <template #icon><PlusOutlined /></template>
+              </a-button>
+              <a-button class="ui_btn" @click="addToNodes(true,true)" :disabled="filt.all.filtered.length<1" size="small" type="link">
+                Add All
+                <template #icon><PlusOutlined /></template>
+              </a-button>
             </div>
           </div>
           <!--  -->
           <!--  -->
           <div class="pool-cont">
+            <h2>Selected Devices</h2>
             <div class="filters">
               <div>
                 <a-input-search :allowClear="true" size="small" v-model:value="filt.sel.query" @input="supperFilter('sel')" placeholder="Enter host name" style="width:200px;"/>
@@ -84,19 +86,19 @@
                     </template>
               </a-table>
             </div>
-            <div style="margin-top:10px;">
-              <a-button @click="addToNodes(false)" danger :disabled="filt.sel.tempKeys.length<1" size="small" type="link">
+            <div class="btn_grp" style="margin-top:10px;">
+              <a-button class="ui_btn" @click="addToNodes(false)" danger :disabled="filt.sel.tempKeys.length<1" size="small" type="link">
                   Remove Selected
                   <template #icon><CloseOutlined /></template>
                 </a-button>
-                  <a-button danger @click="addToNodes(false,true)" :disabled="filt.sel.filtered.length<1" size="small" type="link">
-                  Remove All
-                  <template #icon><CloseOutlined /></template>
-                </a-button>
-                <a-button @click="tempDevice.options.show=true" size="small" type="link">
-                  Add Device
-                  <template #icon><PlusOutlined /></template>
-                </a-button>
+              <a-button class="ui_btn" danger @click="addToNodes(false,true)" :disabled="filt.sel.filtered.length<1" size="small" type="link">
+                Remove All
+                <template #icon><CloseOutlined /></template>
+              </a-button>
+              <a-button class="ui_btn" @click="tempDevice.options.show=true" size="small" type="link">
+                Add Device
+                <template #icon><PlusOutlined /></template>
+              </a-button>
             </div>
           </div>
         </div>
@@ -127,7 +129,7 @@
         </a-modal>
       </div>
       <div>
-          <a-button size="small" v-if="showSave" style="margin-top:12px" @click="proccessAndUpdate">Save</a-button>
+          <a-button class="ui_btn" size="small" v-if="showSave" style="margin-top:12px;color:var(--action);" @click="proccessAndUpdate">Apply</a-button>
       </div>
     </div>
 </template>
@@ -302,9 +304,8 @@ export default {
 .pool{
   width:100%;
   height:fit-content;
-  /* max-height:495px; */
+  /* max-height:495px; display:flex; */
   overflow-y:auto;
-  display:flex;
   flex-wrap:wrap;
 }
 .pool-item{
@@ -329,5 +330,11 @@ export default {
 }
 .filters{
   margin-bottom:10px;
+}
+.filters>div{
+  margin:15px 0px;
+}
+.btn_grp button{
+  margin:0px 5px;
 }
 </style>

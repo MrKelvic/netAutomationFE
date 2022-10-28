@@ -26,10 +26,10 @@
               </span>
             </template>
           </a-table>
-          <a-button @click="tempDevice.options.show=true;tempDevice.options.isEdit=false" size="small" type="link">
-            Add Device
-            <template #icon><PlusOutlined /></template>
-          </a-button>
+            <a-button class="ui_btn" @click="tempDevice.options.show=true;tempDevice.options.isEdit=false" size="small" type="link">
+              Add Device
+              <template #icon><PlusOutlined /></template>
+            </a-button>
        </div>
        <div style="max-width:150px;">
          <div class="infoc" v-if="inFocus">
@@ -53,7 +53,7 @@
                   <span class="head">{{detail.title}}</span>
                   <span v-if="!isarray(detail.value)" class="data">{{detail.value}}</span>
                   <span v-else>
-                    <a-tag style="margin:2px;" color="grey" v-for="v in detail.value" :key="v" >{{v}}</a-tag>
+                    <a-tag style="margin:3px;color:var(--color);font-size:1.1em;" color="blue" v-for="v in detail.value" :key="v" >{{v}}</a-tag>
                   </span>
                 </div>
               </div>
@@ -65,15 +65,15 @@
                 <a-spin tip="running napalm engine" />
             </div>
             <div class="btn_actions">
-              <a-button type="link" @click="$router.push({name:'interact',params:{ip:inFocus.IP.ip}})" :disabled="!inFocus.reacheable" ghost>
+              <a-button class="ui_btn" style="margin:0px 6px;" type="link" @click="$router.push({name:'interact',params:{ip:inFocus.IP.ip}})" :disabled="!inFocus.reacheable" ghost>
                 <i style="margin-right:10px;" class="fa-solid fa-terminal"></i>
                 interact
               </a-button>
-              <a-button type="link" @click="initEdit()" ghost>
+              <a-button class="ui_btn" style="margin:0px 6px;" type="link" @click="initEdit()" ghost>
                 <i style="margin-right:10px;" class="fa-solid fa-edit"></i>
                 Edit
               </a-button>
-              <a-button type="link" @click="deleteInventory()" danger>
+              <a-button class="ui_btn" style="margin:0px 6px;" type="link" @click="deleteInventory()" danger>
                 <i style="margin-right:10px;" class="fa-regular fa-trash-can"></i>
                 Remove
               </a-button>
@@ -416,9 +416,13 @@ export default {
   flex-wrap:wrap;
   margin-bottom:10px;
   place-items:center;
+  font-size:1.2em;
   /* place-content:center; */
 }
 .topinfo p{
+  margin:0px;
+}
+.topinfo h2{
   margin:0px;
 }
 .topinfo>span{
@@ -434,12 +438,12 @@ export default {
   height:60px;
 }
 .head{
-  font-size:12px;
+  font-size:14px;
   margin-right:10px;
   font-weight:bold;
 }
 .data{
-
+  font-size:14px;
 }
 .btn_actions{
   margin-top:20px;
