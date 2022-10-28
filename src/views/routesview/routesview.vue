@@ -23,7 +23,7 @@
               <div>
                 <!-- <p>{{protocol}}</p> -->
                 <div v-if="protocol.protocol=='ospf'">
-                  <a-button style="padding-left:0px;" @click="AddRouteProcess(protocolIndex,'ospf')" type="link" title="Add new OSPF process">
+                  <a-button class="ui_btn" @click="AddRouteProcess(protocolIndex,'ospf')" type="link" title="Add new OSPF process">
                     <span style="margin-right:10px;">Add OSPF process</span>
                     <i class="fa-solid fa-plus"></i>
                   </a-button>
@@ -50,7 +50,7 @@
                   <div class="pid_process" v-for="(routeProcess,processID) in  protocol.routes" :key="routeProcess.pid">
                     <div>
                        <div class="addProccess">
-                            <span style="margin-right:5px;color:var(--g-color);">Process ID <span style="color:green;font-weight:bold;">{{routeProcess.pid}}</span></span>
+                            <span style="margin-right:5px;color:var(--g-color);">Process ID <span style="color:green;font-weight:bold;margin-left:4px;">{{routeProcess.pid}}</span></span>
                       </div>
                       <div v-if="routeProcess.passive" class="passiveIntCls passiveIntClsRed">
                         <p>Passive Interfaces</p>
@@ -69,7 +69,7 @@
                       <a-table :pagination="{ pageSize:10,size:'small',showSizeChanger:false }" size="small" :columns="cols.ospf.network" :dataSource="routeProcess.network"> 
                         <template #footer>
                           <div class="addProccessFoot">
-                             <a-button type="link" @click="addDynamicRoute(protocolIndex,processID,null,null,null,'ospf')">
+                             <a-button class="ui_btn" type="link" @click="addDynamicRoute(protocolIndex,processID,null,null,null,'ospf')">
                               <span style="margin-right:10px;">Add route</span>
                               <i class="fa-solid fa-plus"></i>
                             </a-button>
@@ -103,12 +103,12 @@
                           <p>AS Number</p>
                           <div>
                             <a-input v-model:value="cols.eigrp.formData.asn" size="small" placeholder="Enter AS number" style="width:100px;" />
-                            <a-button style="margin-left:5px;" @click="AddRouteProcess(protocolIndex,'eigrp')" type="link">
+                            <a-button class="ui_btn" style="margin-left:5px;" @click="AddRouteProcess(protocolIndex,'eigrp')" type="link">
                               save
                             </a-button>
                           </div>
                       </div>
-                      <a-button v-else style="padding-left:0px !important;" @click="cols.eigrp.formData.isAddingAs=true" type="link">
+                      <a-button class="ui_btn" v-else @click="cols.eigrp.formData.isAddingAs=true" type="link">
                         <span style="margin-right:10px;">Add EIRGP ASN</span>
                         <i class="fa-solid fa-plus"></i>
                       </a-button>
@@ -141,7 +141,7 @@
                         </template>
                         <template #footer>
                           <div class="addProccessFoot">
-                             <a-button type="link" @click="addDynamicRoute(protocolIndex,processID,null,null,null,'eigrp')">
+                             <a-button class="ui_btn" type="link" @click="addDynamicRoute(protocolIndex,processID,null,null,null,'eigrp')">
                               <span style="margin-right:10px;">Add route</span>
                               <i class="fa-solid fa-plus"></i>
                             </a-button>
@@ -197,7 +197,7 @@
                       <a-table :pagination="{ pageSize:10,size:'small',showSizeChanger:false }" size="small" :columns="cols.static.network" :dataSource="routeProcess.route">
                         <template #footer>
                           <div class="addProccessFoot">
-                             <a-button type="link" @click="editStaticRoute('show')">
+                             <a-button class="ui_btn" type="link" @click="editStaticRoute('show')">
                               <span style="margin-right:10px;">Add route</span>
                               <i class="fa-solid fa-plus"></i>
                             </a-button>
@@ -237,7 +237,9 @@
 </template>
 
 <script>
+// import { diff, addedDiff, deletedDiff, updatedDiff, detailedDiff } from 'deep-object-diff';
 // imports goes here
+import { v4 as uuid } from 'uuid';
 import {
   CaretRightOutlined,
   QuestionCircleOutlined
@@ -258,6 +260,7 @@ export default {
       text:'..........',
       activeKey:['ospf','eigrp','static'],
       routes:[],
+      compareCache:[],
       cols:{
         ospf:{
           network:[
@@ -359,18 +362,31 @@ export default {
           }
         }
       },
+      changes:{
+          added:[],
+          removed:[],
+          changed:[]
+      }
     }
   },
   methods:{
     routesToLinear(){
-      // console.clear()
+      console.clear()
+      // console.log(this.content)
+      this.compareCache=[] 
+      this.routes=[]
       for(let protocol in this.content){
-        this.routes.push({
+        let obj={
           protocol:protocol,
           routes:this.content[protocol]
-        })
+        }
+        this.routes.push(obj)
+        this.compareCache.push(JSON.parse(JSON.stringify(obj)))
       }
-        // console.log(this.routes)
+      // console.log(this.routes)
+    },
+    emitChange(){
+      this.$emit("changeEvent",{target:'routes',value:this.changes})
     },
     editStaticRoute(action,data,index){
       if(action=='show'){
@@ -395,7 +411,6 @@ export default {
           })
           if(pointerIndex+1){
             this.cols.static.formData.data=data
-            console.log(data)
             this.cols.static.formData.clone=JSON.parse(JSON.stringify(data))
             this.cols.static.formData.pointer=[index,pointerIndex]
             this.cols.static.formData.show=true
@@ -404,37 +419,83 @@ export default {
       }else if(action=='add'){
         if(this.cols.static.formData.pointer.length){
           // Editing
+          //if to be eddited was just added
+          const indexChk =this.changes.added.findIndex(e=>
+             e.value?.uid==this.routes[index].routes[0].route[this.cols.static.formData.pointer[1]]?.uid)
+          if(indexChk!=-1){
+            //then replace what is at added's index
+            console.log("Item was found in added List :: ",indexChk," ",this.changes.added[indexChk])
+            this.changes.added[indexChk]=this.cols.static.formData.data
+          }else{
+            // this is an actual change then check if item already exists in changed array? then replace it else push
+            const indexAlt =this.changes.changed.findIndex(e=>
+              e.value?.uid==this.routes[index].routes[0].route[this.cols.static.formData.pointer[1]]?.uid)
+              let nObj={
+                  key:'static',
+                  value:this.cols.static.formData.data,
+                  old:this.compareCache[index].routes[0].route[this.cols.static.formData.pointer[1]]
+                }
+            if(indexAlt!=-1){
+              console.log("Item was found in changed List :: ",indexAlt," ",this.changes.changed[indexAlt])
+              this.changes.changed[indexAlt]=nObj
+            }else{
+              console.log("Item was not found in List :: PUSHED")
+              this.changes.changed.push(nObj)
+            }
+          }
+
           this.routes[index].routes[0].route[this.cols.static.formData.pointer[1]]=this.cols.static.formData.data
+          // console.log(this.changes)
+          this.emitChange()
+          // DONE_COMP_DIFF
         }else{
-          this.routes[index].routes[0].route.push(this.cols.static.formData.data)
+          let obj={...this.cols.static.formData.data,uid:uuid()}
+          this.routes[index].routes[0].route.push(obj)
+          this.changes.added.push({
+            key:'static',value:obj
+          })
+          // console.log(this.changes)
+          this.emitChange()
+          // DONE_COMP_DIFF
         }
         // console.log(this.routes[index].routes[0].route)
         this.editStaticRoute('show')
       }else if(action=='remove'){
-        this.routes[index].routes[0].route=this.routes[index].routes[0].route.filter(records=>{
-        let found=false
-        for(let key in data){
-          if(records[key]!=data[key]){
-            found=true
-            break
-          }
+        this.routes[index].routes[0].route=this.routes[index].routes[0].route.filter(records=>records.uid!=data.uid)
+        // if found in changes.added then remove else just add to removed
+        const indexChk =this.changes.added.findIndex(e=>e.value?.uid==data?.uid)
+        if(indexChk!=-1){
+          this.changes.added=this.changes.added.filter(e=>e.value?.uid!=data?.uid)
+        }else{
+          this.changes.changed=this.changes.changed.filter(e=>e.value?.uid!=data?.uid)
+          let originalFromCache=this.compareCache[index].routes[0].route.find(e=>e.uid==data.uid)
+          this.changes.removed.push({
+            key:'static',value:originalFromCache||data
+          })
         }
-        return found
-      })
+        // console.log(this.changes)
+        this.emitChange()
+        // DONE_COMP_DIFF
       }
     },
     // DYNAMIC ROUTES
     removeRoute(protocolIndex,processID,record){
-      this.routes[protocolIndex].routes[processID].network=this.routes[protocolIndex].routes[processID].network.filter(records=>{
-        let found=false
-        for(let key in record){
-          if(records[key]!=record[key]){
-            found=true
-            break
-          }
-        }
-        return found
-      })
+      this.routes[protocolIndex].routes[processID].network=this.routes[protocolIndex].routes[processID].network.filter(records=>records?.uid!=record?.uid)
+      // if found in changes.added then remove else just add to removed
+      const indexChk =this.changes.added.findIndex(e=>e.value?.uid==record?.uid)
+      if(indexChk!=-1){
+        this.changes.added=this.changes.added.filter(e=>e.value?.uid!=record?.uid)
+      }else{
+        this.changes.changed=this.changes.changed.filter(e=>e.value?.uid!=record?.uid)
+        let originalFromCache=this.compareCache[protocolIndex].routes[processID].network.find(e=>e.uid==record.uid)
+        this.changes.removed.push({
+          key:this.routes[protocolIndex].protocol,
+          value:{...(originalFromCache||record),pid:this.routes[protocolIndex].routes[processID].pid}
+        })
+      }
+      // console.log(this.changes)
+        this.emitChange()
+        // DONE_COMP_DIFF
     },
     cancelAdd(proto){
       this.routes[this.cols[proto].formData.pointer[0]].routes[this.cols[proto].formData.pointer[1]].network[this.cols[proto].formData.pointer[2]]=this.cols[proto].formData.clone
@@ -463,10 +524,65 @@ export default {
         this.cols[proto].formData.show=true
         this.cols[proto].formData.pointer=[routeIndex,pIdIndex]
       }else if(data&&!close){
+        const firstIndex=this.cols[proto].formData.pointer[0]
+        const secondIndex=this.cols[proto].formData.pointer[1]
+        const thirdIndex=this.cols[proto].formData.pointer[2]
         if(this.cols[proto].formData.isEdit){
-          this.routes[this.cols[proto].formData.pointer[0]].routes[this.cols[proto].formData.pointer[1]].network[this.cols[proto].formData.pointer[2]]=this.cols[proto].formData.data
+          // Edditing
+          const protocolNumber={
+              ospf:{pid:this.routes[firstIndex].routes[secondIndex].pid},
+              eigrp:{asn:this.routes[firstIndex].routes[secondIndex].asn}
+            }
+          const indexChk =this.changes.added.findIndex(e=>
+             e.value?.uid==this.routes[firstIndex].routes[secondIndex].network[thirdIndex]?.uid)
+          if(indexChk!=-1){
+            //then replace what is at added's index
+            console.log("Item was found in added List :: ",indexChk," ",this.changes.added[indexChk])
+            this.changes.added[indexChk]={key:this.routes[firstIndex].protocol,value:{...this.cols[proto].formData.data,...(protocolNumber[this.routes[firstIndex].protocol])}}
+          }else{
+            // this is an actual change then check if item already exists in changed array? then replace it else push
+            const indexAlt =this.changes.changed.findIndex(e=>
+              e.value?.uid==this.routes[firstIndex].routes[secondIndex].network[thirdIndex]?.uid)
+              
+              let nObj={
+                  key:this.routes[firstIndex].protocol,
+                  value:{...this.cols[proto].formData.data,
+                    ...(protocolNumber[this.routes[firstIndex].protocol])
+                  },
+                  old:{...this.compareCache[firstIndex].routes[secondIndex].network[thirdIndex],
+                    ...(protocolNumber[this.routes[firstIndex].protocol])
+                  }
+                }
+            if(indexAlt!=-1){
+              console.log("Item was found in changed List :: ",indexAlt," ",this.changes.changed[indexAlt])
+              this.changes.changed[indexAlt]=nObj
+            }else{
+              console.log("Item was not found in List :: PUSHED")
+              this.changes.changed.push(nObj)
+            }
+          }
+          this.routes[firstIndex].routes[secondIndex].network[thirdIndex]=this.cols[proto].formData.data
+          // this.routes[this.cols[proto].formData.pointer[0]].routes[this.cols[proto].formData.pointer[1]].network[this.cols[proto].formData.pointer[2]]=this.cols[proto].formData.data
+          // console.log(this.changes)
+          this.emitChange()
+          // DONE_COMP_DIFF
         }else{
-          this.routes[this.cols[proto].formData.pointer[0]].routes[this.cols[proto].formData.pointer[1]].network.push(this.cols[proto].formData.data)
+          // this.routes[this.cols[proto].formData.pointer[0]].routes[this.cols[proto].formData.pointer[1]].network.push(this.cols[proto].formData.data)
+          let obj={...this.cols[proto].formData.data,uid:uuid()}
+          this.routes[firstIndex].routes[secondIndex].network.push(obj)
+          const protocolNumber={
+              ospf:{pid:this.routes[this.cols[proto].formData.pointer[0]].routes[this.cols[proto].formData.pointer[1]].pid},
+              eigrp:{asn:this.routes[this.cols[proto].formData.pointer[0]].routes[this.cols[proto].formData.pointer[1]].asn}
+            }
+          this.changes.added.push({
+            key:this.routes[this.cols[proto].formData.pointer[0]].protocol,
+            value:{...obj,
+              ...(protocolNumber[this.routes[this.cols[proto].formData.pointer[0]].protocol])
+            }
+          })
+          // console.log(this.changes)
+          this.emitChange()
+          // DONE_COMP_DIFF
         }
         this.addDynamicRoute(null,null,null,true,null,proto)
       }else{
@@ -545,6 +661,6 @@ export default {
   border: none !important;
 }
 .routes_wrapper .ant-collapse-header{
-  background: var(--g-shade-back);
+  /* background: var(--g-shade-back); */
 }
 </style>
