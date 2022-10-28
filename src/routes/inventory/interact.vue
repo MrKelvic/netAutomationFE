@@ -1,16 +1,17 @@
 
 <template>
-    <div style="background:#fff;padding:15px;">
+    <div style="background:var(--background);padding:15px;">
       <div>
           <!-- <p>IP 1.1.1.1</p>
           <p>{{device}}</p> -->
       </div>
       <div class="racks_wrapp">
-        <div style="display:flex;place-items:center;place-content:center;min-height:200px;" v-if="loadingState">
+        <div style="display:flex;place-items:center;place-content:center;height:50vh;" v-if="loadingState">
             <a-spin tip="running napalm engine" />
         </div>
         <div v-else>
           <div v-if="device">
+            <p>{{changes}}</p>
             <div>
               <div class="topinfo">
                 <span style="color:#389e0d;">
@@ -26,6 +27,11 @@
                   <p>{{device.node.decription}}</p>
                 </div>
               </div>
+              <div class="action_btns">
+                <!-- <a-button v-if="commitStates.genCode" class="ui_btn" size="small" type="link">
+                  View changes
+                </a-button> -->
+              </div>
             </div>
             <div>
               <!-- SUB ROUTE -->
@@ -34,7 +40,10 @@
                 <a-tab-pane v-for="step in steps" :tab="step.title" :key="step.title" :title="step.title">
                   <!-- <p>{{step}}</p> -->
                   <!-- <component :is="routesview" :content="device.state[step.payload]" :deviceType="device.node.deviceType"></component> -->
-                  <component :is="step.component" :content="device.state[step.payload]" :extras="getComponentDateDependancies(step.payload)" :deviceType="device.node.deviceType"></component>
+                  <component :is="step.component" :content="device.state[step.payload]" @changeEvent="storeChange" :extras="getComponentDateDependancies(step.payload)" :deviceType="device.node.deviceType"></component>
+                </a-tab-pane>
+                <a-tab-pane tab="Changes" key="Changes" title="Changes">
+                  <changesview :changesList="changes.values" :trigger="changes.trigger" :device="device"/>
                 </a-tab-pane>
               </a-tabs>
             </div>
@@ -52,6 +61,7 @@ import inventory from '@/service/inventory';
 import interfaceview from '@/views/interfaceview/interfaceview.vue'
 import policiesview from '@/views/policiesview/policiesview.vue'
 import routesview from '@/views/routesview/routesview.vue'
+import changesview from '@/views/changesview/changesview.vue'
 // import engine from '@/service/engine';
 export default {
   name: 'sitemngsubrte',
@@ -61,6 +71,7 @@ export default {
     policiesview,
     routesview,
     interfaceview,
+    changesview
   },
   computed:{
 
@@ -79,15 +90,25 @@ export default {
           component: 'routesview',
           payload:'routes',
         },
-        {
-          title: 'Policies',
-          component:"policiesview",
-          payload:'policies',
-        },
+        // {
+        //   title: 'Policies',
+        //   component:"policiesview",
+        //   payload:'policies',
+        // },
       ],
       loadingState:false,
       device:null,
-      originalDeviceState:null
+      originalDeviceState:null,
+      commitStates:{
+        genCode:false||true
+      },
+      changes:{
+        trigger:0,
+        values:{
+          interfaces:[],
+          routes:[]
+        }
+      }
     }
   },
   methods:{
@@ -114,6 +135,13 @@ export default {
         return {listedInterfaces:availableInterfaces}
       }
       return {}
+    },
+    storeChange(event){
+      if(this.changes.values[event.target]!=undefined){
+        this.changes.trigger+=1
+        this.changes.values[event.target]=event.value
+        this.commitStates.genCode=true
+      }
     }
   },
   mounted(){
@@ -132,6 +160,7 @@ export default {
   flex-wrap:wrap;
   margin-bottom:10px;
   place-items:center;
+  font-size:1.15em;
   /* place-content:center; */
 }
 .topinfo p,.topinfo h2{

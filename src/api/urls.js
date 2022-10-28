@@ -21,7 +21,7 @@ let urls={
         engine:{
             auto:gen('engine',"post",false),
             report:gen('report',"post",false),
-
+            digestChanges:gen('digestChanges',"post",false),
         }
     }
 }
