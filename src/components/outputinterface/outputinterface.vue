@@ -4,7 +4,7 @@
     <a id="download"></a>
     <div style="margin: 0px 0px 25px 0px">
       <div>
-        <p style="color: var(--color-grey)">Select fields to export</p>
+        <p style="color: var(--grey)">Select fields to export</p>
         <a-tree-select
           v-model:value="headers"
           style="width: 100%"
@@ -20,7 +20,7 @@
           <a-button v-if="!reportLink&&headers.length" @click="toExcel" type="primary" ghost class="action-btn">
             <span>Generate report as excel</span>
           </a-button>
-          <a-button style="padding-left:0px;" v-if="reportLink&&headers.length" :href="reportLink" target="_blank" type="link" ghost class="action-btn">
+          <a-button style="padding-left:0px;" v-if="reportLink&&headers.length" :href="reportLink" target="_blank" type="link" ghost class="action-btn action_green">
             <span>Download generated report</span>
           </a-button>
         </li>
@@ -64,6 +64,7 @@ export default {
         headers: [],
         values: [],
       },
+      SHOW_PARENT:''
     };
   },
   methods: {
@@ -167,6 +168,9 @@ export default {
   margin: 10px 0px;
 }
 .action-list > li {
+}
+.action_green{
+  color:var(--action);
 }
 .action-btn {
   height: fit-content;
