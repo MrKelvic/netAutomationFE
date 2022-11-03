@@ -7,7 +7,7 @@
       <form @submit="authLogin" method="post">
         <div>
           <label for="email">Email address</label>
-          <input v-model="userInputs.loginCreds.email" type="email" placeholder="user@cbg.com.gh" id="email">
+          <input v-model="userInputs.loginCreds.email" type="email" placeholder="Enter username" id="email">
         </div>
           <div>
           <label for="password">Password</label>
