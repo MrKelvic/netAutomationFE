@@ -57,7 +57,9 @@ export default {
   /* background:grey; */
   /* border:1px solid white; */
   padding:0px 10px;
-  padding-top:40px;
+  padding-top:20px;
+  height: 100vh;
+  overflow: auto;
 }
 
 /* media */

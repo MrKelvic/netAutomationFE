@@ -41,7 +41,8 @@
         <div>
           <!-- {{interfaceList[0]}} -->
           <div class="content-table">
-             <a-table v-if="interfaceList.length" :columns="tableCols" :data-source="interfaceList" :scroll="{x:1300}" :pagination="{ pageSize:20,size:'small',showSizeChanger:false }">
+            <!-- :scroll="{x:1000}" -->
+             <a-table v-if="interfaceList.length" :columns="tableCols" :data-source="interfaceList" :scroll="{ y: 320 }" :pagination="{ pageSize:20,size:'small',showSizeChanger:false }">
               <template #state="{ text }">
                 <a-tag :color="interFaceColor(text,true)" style="color:var(--color);">
                   {{ text?'Up':'Admin Down' }}
@@ -53,7 +54,7 @@
                 </a-tag>
               </template>
               <template #routed="{ text }">
-                <span>{{text?'routed port':'switchport'}}</span>
+                <span>{{text?'routed':'switchport'}}</span>
               </template>
               <template #edit="{ record }">
               <span>
@@ -67,7 +68,6 @@
           </div>
         </div>
         <div class="drawer">
-          <!--  -->
           <a-modal v-model:visible="isInEdit.show" 
           :centered="true" :destroyOnClose="true" 
           :closable="false" :maskClosable="false"
@@ -81,56 +81,69 @@
                 </a-tag>
             </h2>
              <a-form layout="vertical" :model="isInEdit.int">
-              <a-form-item :colon="false" label="Administrative state">
-                <a-switch v-model:checked="isInEdit.int.state" />
-              </a-form-item>
-              <a-form-item :colon="false" label="Routed Interface">
-                  <a-switch :disabled="!allowL2" @change="layerChange" v-model:checked="isInEdit.int.routed" />
-                  <span style="display:inline-block;margin:0px 20px;">{{isInEdit.int.routed?'routed port':'switch port'}}</span>
-                  <!-- <a-radio-group @change="layerChange" v-model:value="isInEdit.int.layer">
-                    <a-radio :disabled="!allowL2" :value="false">Switch port</a-radio>
-                    <a-radio :disabled="isInEdit.int.mode=='trunk'" :value="true">Routed port</a-radio>
-                  </a-radio-group> -->
+              <div v-if="!isInEdit.int.deleted">
+                <a-form-item :colon="false" label="Administrative state">
+                  <a-switch v-model:checked="isInEdit.int.state" />
                 </a-form-item>
-              <div v-if="isInEdit.int.state">
-                <a-form-item v-if="allowL2&&!isInEdit.int.routed" :colon="false" label="Interface mode">
-                  <a-radio-group @change="controlIntType" v-model:value="isInEdit.int.mode">
-                    <a-radio value="access">Access</a-radio>
-                    <a-radio value="trunk">Trunk</a-radio>
-                  </a-radio-group>
-                </a-form-item>
-                <div v-if="allowL2">
-                  <div v-if="isInEdit.int.mode=='access'&&!isInEdit.int.routed">
-                    <a-form-item :colon="false" label="Data VLAN">
-                      <a-input v-model:value="isInEdit.int.data" />
+                <a-form-item v-if="isInEdit.int.state" :colon="false" label="Routed Interface">
+                    <a-switch :disabled="!allowL2" @change="layerChange" v-model:checked="isInEdit.int.routed" />
+                    <span style="display:inline-block;margin:0px 20px;">{{isInEdit.int.routed?'routed port':'switch port'}}</span>
+                    <!-- <a-radio-group @change="layerChange" v-model:value="isInEdit.int.layer">
+                      <a-radio :disabled="!allowL2" :value="false">Switch port</a-radio>
+                      <a-radio :disabled="isInEdit.int.mode=='trunk'" :value="true">Routed port</a-radio>
+                    </a-radio-group> -->
+                  </a-form-item>
+                <div v-if="isInEdit.int.state">
+                  <a-form-item v-if="allowL2&&!isInEdit.int.routed" :colon="false" label="Interface mode">
+                    <a-radio-group @change="controlIntType" v-model:value="isInEdit.int.mode">
+                      <a-radio value="access">Access</a-radio>
+                      <a-radio value="trunk">Trunk</a-radio>
+                    </a-radio-group>
+                  </a-form-item>
+                  <div v-if="allowL2">
+                    <div v-if="isInEdit.int.mode=='access'&&!isInEdit.int.routed">
+                      <a-form-item :colon="false" label="Data VLAN">
+                        <a-input v-model:value="isInEdit.int.data" />
+                      </a-form-item>
+                      <a-form-item :colon="false" label="Voice VLAN">
+                        <a-input v-model:value="isInEdit.int.voice" />
+                      </a-form-item>
+                    </div>
+                    <div v-if="isInEdit.int.mode=='trunk'&&!isInEdit.int.routed">
+                      <a-form-item :colon="false" label="Allowed VLANs">
+                        <a-input v-model:value="isInEdit.int.allowedVlans" />
+                      </a-form-item>
+                      <a-form-item :colon="false" label="Native VLAN">
+                        <a-input v-model:value="isInEdit.int.nativeVlan" />
+                      </a-form-item>
+                    </div>
+                  </div>
+                  <div v-if="isInEdit.int.routed&&isInEdit.int.mode!='trunk'">
+                    <a-form-item :colon="false" label="IP address">
+                      <a-input v-model:value="isInEdit.int.ip" />
                     </a-form-item>
-                    <a-form-item :colon="false" label="Voice VLAN">
-                      <a-input v-model:value="isInEdit.int.voice" />
+                    <a-form-item :colon="false" label="Mask">
+                      <a-input v-model:value="isInEdit.int.mask" />
                     </a-form-item>
                   </div>
-                  <div v-if="isInEdit.int.mode=='trunk'&&!isInEdit.int.routed">
-                    <a-form-item :colon="false" label="Allowed VLANs">
-                      <a-input v-model:value="isInEdit.int.allowedVlans" />
-                    </a-form-item>
-                    <a-form-item :colon="false" label="Native VLAN">
-                      <a-input v-model:value="isInEdit.int.nativeVlan" />
-                    </a-form-item>
-                  </div>
-                </div>
-                <div v-if="isInEdit.int.routed&&isInEdit.int.mode!='trunk'">
-                  <a-form-item :colon="false" label="IP address">
-                    <a-input v-model:value="isInEdit.int.ip" />
-                  </a-form-item>
-                  <a-form-item :colon="false" label="Mask">
-                    <a-input v-model:value="isInEdit.int.mask" />
+                  <a-form-item :colon="false" label="Description">
+                    <a-input v-model:value="isInEdit.int.description" />
                   </a-form-item>
                 </div>
-                <a-form-item :colon="false" label="Description">
-                  <a-input v-model:value="isInEdit.int.description" />
-                </a-form-item>
+                <div v-else>
+                  <p>Interface is down</p>
+                </div>
+                <!-- <div>
+                  <a-popconfirm v-if="isVirtualInterfaces" @confirm="removeVirtualInterface"  title="Are you sure you want to remove interface?" okText="yes">
+                    <a-button class="ui_btn" type="link" danger>
+                      <span style="margin-right:10px;">Remove virtual interface</span>
+                      <i class="fa-solid fa-trash-can"></i>
+                    </a-button>
+                  </a-popconfirm>
+                </div> -->
               </div>
               <div v-else>
-                <p>Interface is down</p>
+                <p>Interface removed</p>
               </div>
             </a-form>
           </a-modal>
@@ -150,6 +163,9 @@ export default {
   components: {
     },
   computed:{
+    isVirtualInterfaces(){
+      return this.virtualInterfaces.includes(this.isInEdit.int.module)
+    },
     allowL2(){
       // if interface is not a vlan nor a loopback and device is a switch all interface to be layer 2
       return !['Vlan','Loopback'].includes(this.isInEdit.int.module)&&['switch'].includes(this.deviceType)
@@ -176,6 +192,7 @@ export default {
         temp:null,
         removed:[]
       },
+      virtualInterfaces:['Vlan','Loopback','PortChannel'],
       interfaceList:[],
       tableCols:[],
       compareCache:[],
@@ -202,7 +219,10 @@ export default {
       }
       console.log(this.changes)
       this.$emit("changeEvent",{target:'interfaces',value:this.cleanUpChanges(this.changes)})
-    },  
+    },
+    removeVirtualInterface(){
+      this.isInEdit.int.deleted=true
+    }, 
     saveEdit(){
       this.computeChanges()
       this.interfaceList[this.isInEdit.int.index]=Object.assign({},JSON.parse(JSON.stringify(this.isInEdit.int)))
@@ -273,16 +293,17 @@ export default {
     },
     genColumns(){
       if(!this.interfaceList[0]) return []
-      let filters=["index","name","ip_helper","module","shortName","description","id","allowedVlans","voice","nativeVlan"]
+      let filters=["index","name","ip_helper","module","shortName","description","id","allowedVlans","voice","nativeVlan","outgoing_acl","inbound_acl"]
       let temp=Object.keys(this.interfaceList[0]).filter(e=>!filters.includes(e))
       let tempL3=Object.keys(this.interfaceList[this.interfaceList.length-1]).filter(e=>!filters.includes(e)&&!temp.includes(e))
-      let smallWidth=["connected","state","routed","data","outgoing_acl","inbound_acl","mode"]
+      // let smallWidth=["connected","state","routed","data","outgoing_acl","inbound_acl","mode"]
+      let smallWidth=["connected","state","routed","data","mode"]
       this.tableCols=[...temp,...tempL3].map(e=>({
         title:e,
         key:e,
         dataIndex:e,
         slots:{ customRender:e},
-        width:smallWidth.includes(e)?100:150
+        width:smallWidth.includes(e)?25:35
       }))
       this.tableCols.push({
         title:"Edit",
@@ -291,9 +312,9 @@ export default {
         slots: { customRender:"edit"}
       })
       this.tableCols[0].fixed="left"
-      this.tableCols[0].width=200
+      this.tableCols[0].width=60
       this.tableCols[this.tableCols.length-1].fixed="right"
-      this.tableCols[this.tableCols.length-1].width=40
+      this.tableCols[this.tableCols.length-1].width=15
     },
     genLinearInterface(){
         let interList=[]
@@ -324,7 +345,7 @@ export default {
 </script>
 <style scoped>
 .deviceModule_cont{
-  margin:40px 0px;
+  margin:25px 0px;
 }
 .deviceModule{
   background:var(--color);

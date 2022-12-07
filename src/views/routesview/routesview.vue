@@ -84,7 +84,7 @@
                         </template>
                         <template #delete="{ record }">
                           <span>
-                              <a-popconfirm @confirm="removeRoute(protocolIndex,processID,record)"  title="Are you sure you wante to remove network on next commit?" okText="yes">
+                              <a-popconfirm @confirm="removeRoute(protocolIndex,processID,record)"  title="Are you sure you want to remove network on next commit?" okText="yes">
                                 <template #icon><question-circle-outlined style="color: red" /></template>
                                 <a href="#" style="color:#ff4d4f;">
                                   <i class="fa-regular fa-trash-can"></i>

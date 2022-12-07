@@ -11,7 +11,6 @@
         </div>
         <div v-else>
           <div v-if="device">
-            <p>{{changes}}</p>
             <div>
               <div class="topinfo">
                 <span style="color:#389e0d;">

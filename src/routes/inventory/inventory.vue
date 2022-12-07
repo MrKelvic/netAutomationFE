@@ -85,7 +85,7 @@
           :centered="true" :destroyOnClose="true" 
           :closable="false" :maskClosable="false"
           @ok="saveTemp"
-          @cancel="saveReset" :title="tempDevice.options.isEdit?'Edit Device':'Add Device'">
+          @cancel="saveReset" :title="tempDevice.options.isEdit?'Edit Device Inventory':'Add Device Inventory'">
         <a-form layout="vertical" :model="tempDevice.value">
           <a-form-item :colon="false" label="Hostname">
             <a-input v-model:value="tempDevice.value.hostname" />
@@ -325,7 +325,6 @@ export default {
 <style scoped>
 .wrapper{
   width:100%;
-  padding-top:30px;
 }
 .add{
   background:var(--theme);
